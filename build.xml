@@ -30,7 +30,7 @@
 
   <!-- Pre-build targets ********************************** -->
     <target name="pre-build:main"
-          depends="git:remote-prune, pre-build:clean-dir, pre-build:make-dir, pre-build:vendor-install"
+          depends="pre-build:clean-dir, pre-build:make-dir, pre-build:vendor-install"
           description="Execute all pre-build actions" />
 
     <target name="pre-build:main-sf"
