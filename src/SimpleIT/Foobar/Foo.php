@@ -6,6 +6,6 @@ class Foo
 {
     function sayBar()
     {
-        return 'Barrrr';
+        return 'Bar';
     }
 }
