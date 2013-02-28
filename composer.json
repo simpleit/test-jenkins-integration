@@ -1,0 +1,19 @@
+{
+    "name": "simple-it/test-jenkins-integration",
+    "description": "Test jenkins test triggering on PR",
+    "authors": [
+        {
+            "name": "Sylvain Mauduit",
+            "email": "sylvain.mauduit@simple-it.fr"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+
+    },
+    "autoload": {
+        "psr-0": {
+            "SimpleIT": "src/"
+        }
+    }
+}

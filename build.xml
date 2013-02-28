@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="test-jenkins-integration" basedir="." default="build:main">
+
+  <!-- Properties ********************************** -->
+    <property name="dir.app" value="${project.basedir}/app" />
+    <property name="dir.src" value="${project.basedir}/src" />
+    <property name="dir.build" value="${project.basedir}/app/build" />
+    <property name="dir.reports" value="${dir.build}/logs" />
+
+  <!-- Filesets ********************************** -->
+    <fileset id="sourcecode" dir="${dir.src}">
+        <include name="**/*.php" />
+    </fileset>
+
+  <!-- Main targets ********************************** -->
+    <target name="build:main"
+          depends="pre-build:main, test:all, post-build:main"
+          description="Build everything" />
+
+    <target name="build:main-sf"
+          depends="pre-build:main-sf, test:all-sf, post-build:main-sf"
+          description="Build everything (Symfony2 projects)" />
+
+  <!-- Git targets ********************************** -->
+    <target name="git:remote-prune"
+          description="Remote Prune...">
+        <echo msg="git remote prune origin" />
+        <exec command="git remote prune origin"/>
+    </target>
+
+  <!-- Pre-build targets ********************************** -->
+    <target name="pre-build:main"
+          depends="git:remote-prune, pre-build:clean-dir, pre-build:make-dir, pre-build:vendor-install"
+          description="Execute all pre-build actions" />
+
+    <target name="pre-build:main-sf"
+          depends="pre-build:main"
+          description="Execute all pre-build actions (Symfony2 projects)" />
+
+    <target name="pre-build:clean-dir"
+          description="Clean up build directories.">
+        <echo msg="Cleaning build directories ..." />
+        <delete dir="${dir.build}" verbose="true" />
+    </target>
+
+    <target name="pre-build:make-dir"
+          description="Create build directories.">
+        <echo msg="Creating build directories ..." />
+        <mkdir dir="${dir.build}" />
+        <mkdir dir="${dir.reports}" />
+    </target>
+
+    <target name="pre-build:vendor-install"
+          description="Install vendors.">
+        <echo msg="Install vendors ..." />
+        <exec command="composer install"/>
+    </target>
+
+  <!-- Test targets ********************************** -->
+    <target name="test:all"
+          depends="test:unit, test:behaviour"
+          description="Executes all tests." />
+
+    <target name="test:all-sf"
+          depends="test:unit-sf, test:behaviour-sf"
+          description="Executes all tests (Symfony2 projects)." />
+
+  <!-- Unit test targets ********************************** -->
+    <target name="test:unit"
+          depends="test:unit:pre, test:unit:execute, test:unit:post"
+          description="Executes unit tests." />
+
+    <target name="test:unit-sf"
+          depends="test:unit:pre-sf, test:unit:execute-sf, test:unit:post-sf"
+          description="Executes unit tests (Symfony2 projects)." />
+
+    <target name="test:unit:pre"
+          description="Execute pre-actions for unit tests">
+        <echo msg="Prepare unit tests..." />
+    </target>
+
+    <target name="test:unit:pre-sf"
+          description="Execute pre-actions for unit tests (Symfony2 projects)">
+        <echo msg="Prepare unit tests..." />
+        <exec command="php app/console cache:clear -env=test; php app/console doctrine:database:drop -env=test --force; php app/console doctrine:database:create -env=test; php app/console doctrine:schema:update --force -env=test; php app/console cache:clear -env=test" logoutput="true"/>
+    </target>
+
+    <target name="test:unit:execute"
+          description="Execute unit tests">
+        <echo msg="Execute unit tests..." />
+        <exec command="phpunit --log-junit ${dir.reports}/phpunit_reports/phpunit.xml -c phpunit.xml.dist" logoutput="true"/>
+    </target>
+
+    <target name="test:unit:execute-sf"
+          description="Execute unit tests (Symfony2 projects)">
+        <echo msg="Execute unit tests..." />
+        <exec command="phpunit --log-junit ${dir.reports}/phpunit_reports/phpunit.xml -c ${dir.app}/phpunit.xml.dist" logoutput="true"/>
+    </target>
+
+    <target name="test:unit:post"
+          description="Execute post-actions for unit tests">
+        <echo msg="Execute post unit tests actions..." />
+    </target>
+
+    <target name="test:unit:post-sf"
+          description="Execute post-actions for unit tests (Symfony2 projects)">
+        <echo msg="Execute post unit tests actions..." />
+    </target>
+
+  <!-- Behaviour test targets ********************************** -->
+    <target name="test:behaviour"
+          depends="test:behaviour:pre, test:behaviour:execute, test:behaviour:post"
+          description="Executes behaviour tests." />
+
+    <target name="test:behaviour-sf"
+          depends="test:behaviour:pre-sf, test:behaviour:execute-sf, test:behaviour:post-sf"
+          description="Executes behaviour tests (Symfony2 projects)." />
+
+    <target name="test:behaviour:pre"
+          description="Execute pre-actions for behaviour tests">
+        <echo msg="Prepare behaviour tests..." />
+    </target>
+
+    <target name="test:behaviour:pre-sf"
+          description="Execute pre-actions for behaviour tests (Symfony2 projects)">
+        <echo msg="Prepare behaviour tests..." />
+        <exec command="php app/console cache:clear -env=prod; php app/console doctrine:database:drop -env=prod --force; php app/console doctrine:database:create -env=prod; php app/console doctrine:schema:update --force -env=prod; php app/console cache:clear -env=prod" logoutput="true"/>
+        <mkdir dir="${dir.reports}/behat_html_reports" />
+        <mkdir dir="${dir.reports}/behat_junit_reports" />
+    </target>
+
+    <target name="test:behaviour:execute"
+          description="Execute behaviour tests">
+        <echo msg="Execute behaviour tests..." />
+    </target>
+
+    <target name="test:behaviour:execute-sf"
+          description="Execute behaviour tests (Symfony2 projects)">
+        <echo msg="Execute behaviour tests..." />
+        <exec command="php app/console behat --format=html,junit,progress --out=${dir.reports}/behat_html_reports/behat_report.html,${dir.reports}/behat_junit_reports --no-ansi --env=test" logoutput="true"/>
+    </target>
+
+    <target name="test:behaviour:post"
+          description="Execute post-actions for behaviour tests">
+        <echo msg="Execute post behaviour tests actions..." />
+    </target>
+
+    <target name="test:behaviour:post-sf"
+          description="Execute post-actions for behaviour tests (Symfony2 projects)">
+        <echo msg="Execute post behaviour tests actions..." />
+    </target>
+
+  <!-- Post-build targets ********************************** -->
+    <target name="post-build:main"
+          description="Executes all post-build actions">
+        <echo msg="Execute post-build actions..." />
+    </target>
+
+    <target name="post-build:main-sf"
+          depends="post-build:log-cache-destroy"
+          description="Executes all post-build actions (Symfony2 projects)" />
+
+    <target name="post-build:log-cache-destroy"
+          description="Executes the destruction of logs and caches.">
+        <exec command="rm -rf ${project.basedir}/app/logs/test.log; touch ${project.basedir}/app/logs/test.log; rm -rf ${project.basedir}/app/cache/*" logoutput="true"/>
+    </target>
+</project>
